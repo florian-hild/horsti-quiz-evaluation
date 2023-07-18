@@ -156,12 +156,12 @@ def weight(weight_value: str, weight_result: str):
   # Remove leading zeros
   weight_value = weight_value.lstrip("0")
 
-  if re.match(r".*(g|gramm|Gramm|Gr)", weight_value):
+  if re.match(r"^[0-9,\.]*\s*(g|[gG]ramm|[gG]r)\b", weight_value):
     # Gramm
-    weight_value = float(re.sub("[^0-9\.]", "", weight_value.replace(',', '.')))
-  elif re.match(r".*(kg|kilogramm|Kilogramm|Kilo)", weight_value):
+    weight_value = float(re.sub("[^0-9\. ]", "", weight_value.replace(',', '.')))
+  elif re.match(r"^[0-9,\.]*\s*(kg|[kK]ilo|[kK]ilogramm)\b", weight_value):
     # Kilogramm
-    weight_value = float(re.sub("[^0-9\.]", "", weight_value.replace(',', '.'))) * 1000
+    weight_value = float(re.sub("[^0-9\. ]", "", weight_value.replace(',', '.'))) * 1000
   else:
     if re.match(r"^[0-9]{3,5}(,\.)?[0-9]*", weight_value):
       # Gramm
