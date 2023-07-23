@@ -1,4 +1,6 @@
 import unittest
+import logging as log
+
 from module_valuate import (
   participant,
   gender,
@@ -9,6 +11,11 @@ from module_valuate import (
 )
 from evaluate import resultset
 
+log.basicConfig(
+  format='[%(levelname)8s] [%(asctime)s.%(msecs)03d] [%(lineno)3s] %(message)s',
+  datefmt='%Y-%m-%d %H:%M:%S'
+)
+log.getLogger().setLevel(log.DEBUG)
 class TestValuation(unittest.TestCase):
   """
   Unit class
@@ -96,7 +103,27 @@ class TestValuation(unittest.TestCase):
     self.assertEqual( weight("03120", resultset['weight']), 50 )
     self.assertEqual( weight("100,6", resultset['weight']), 0 )
     self.assertEqual( weight("3,6123", resultset['weight']), 5 )
+    self.assertEqual( weight("3,2 kg", resultset['weight']), 45 )
 
+
+
+
+  # def test_height(self):
+  #   """
+  #   Unit test height
+  #   max. 50p
+  #   pro 50g Abweichung gerundet 5p weniger
+  #   """
+  #   self.assertEqual( weight("3150", resultset['weight']), 50 )
+  #   self.assertEqual( weight("3150g", resultset['weight']), 50 )
+  #   self.assertEqual( weight("3.15", resultset['weight']), 50 )
+  #   self.assertEqual( weight("3200g", resultset['weight']), 45 )
+  #   self.assertEqual( weight("3.13", resultset['weight']), 50 )
+  #   self.assertEqual( weight("03.13", resultset['weight']), 50 )
+  #   self.assertEqual( weight("03120", resultset['weight']), 50 )
+  #   self.assertEqual( weight("100,6", resultset['weight']), 0 )
+  #   self.assertEqual( weight("3,6123", resultset['weight']), 5 )
+  #   self.assertEqual( weight("3,2 kg", resultset['weight']), 45 )
 
 
 if __name__ == '__main__':

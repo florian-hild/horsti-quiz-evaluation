@@ -1,5 +1,8 @@
+import logging as log
 from datetime import datetime
 import re
+
+logger = log.getLogger(__name__)
 
 def participant(name: str):
   """
@@ -12,14 +15,29 @@ def participant(name: str):
     Examples:
       participant("Anika")
   """
-
-  if not name or not str(name).replace(" ", "").isalpha() or str(name) in ["deinen Namen",]:
-    # print("Teilnehmer not valide. (0p)")
-    # print("Teilnehmer: "+name)
+  if not isinstance(name, str):
+    log.debug("Participant data type not valid (0/10p)")
     return 0
 
-  # print("Teilnehmer valide. (10p)")
-  # print("Teilnehmer: "+name)
+  # Remove spaces
+  name = name.replace(' ', '')
+
+  # Remove emojis
+  # print(name.encode())
+  regrex_pattern = re.compile(pattern = "["
+        u"\U0001F600-\U0001F64F"  # emoticons
+        u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+        u"\U0001F680-\U0001F6FF"  # transport & map symbols
+        u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+  "]+", flags = re.UNICODE)
+  name = regrex_pattern.sub(r'',name)
+  # print(name.encode())
+
+  if not name or not str(name).replace(" ", "").isalpha() or str(name) in ["deinenNamen",]:
+    log.debug("Participant \"%s\" not valid (0/10p)", name)
+    return 0
+
+  log.debug("Participant \"%s\" valid (10/10p)", name)
   return 10
 
 
@@ -37,11 +55,20 @@ def gender(gender_value: str, gender_result: str):
     Examples:
       gender("Männlich", "Männlich")
   """
+  if not isinstance(gender_value, str):
+    log.debug("Gender data type not valid (0/30p)")
+    return 0
+
+  # Remove spaces
+  gender_value = gender_value.replace(' ', '')
 
   if gender_value.upper() == gender_result.upper():
+    log.debug("Gender \"%s\" correct (30/30p)", gender_value)
     return 30
 
+  log.debug("Gender \"%s\" not correct (0/30p)", gender_value)
   return 0
+
 
 
 
@@ -60,6 +87,10 @@ def birthdate(birthdate_value: str, birthdate_result: str):
       birthdate("2023-08-25", "2023-08-21")
   """
 
+  if not isinstance(birthdate_value, str):
+    log.debug("Birthdate data type not valid (0/70p)")
+    return 0
+
   max_score = 70
   score = 0
 
@@ -72,8 +103,10 @@ def birthdate(birthdate_value: str, birthdate_result: str):
   score = max_score - (abs(diff_days) * 10)
 
   if score <= 0:
+    log.debug("Birthdate \"%s\" not correct (0/70p)", str(value_date).split(' ', 1)[0])
     return 0
 
+  log.debug("Birthdate \"%s\" correct (%i/70p)", str(value_date).split(' ', 1)[0], score)
   return score
 
 
@@ -91,24 +124,32 @@ def firstname(firstname_value: str, firstname_result: str):
     Examples:
       firstname("Anika", "Horsti")
   """
+  if not isinstance(firstname_value, str):
+    log.debug("Firstname data type not valid (0/100p)")
+    return 0
+
   score = 0
 
+  # Remove spaces
+  firstname_value = firstname_value.replace(' ', '')
+
   if not firstname_value or not str(firstname_value).isalpha():
-    # print("Name not valide. (0p)")
+    log.debug("Firstname \"%s\" not correct (0/100p)", firstname_value)
     return 0
 
   if firstname_value.upper() == firstname_result.upper():
-    # print("Name is equal. (100p)")
+    log.debug("Firstname \"%s\" correct (100/100p)", firstname_value)
     return 100
 
   if len(firstname_value) == len(firstname_result):
-    # print("Name has equal number of characters. (25p)")
+    log.debug("Firstname \"%s\" has equal number of characters (+25p)", firstname_value)
     score += 25
 
   if firstname_value[0].upper() == firstname_result[0].upper():
-    # print("Name has the same initial letter. (25p)")
+    log.debug("Firstname \"%s\" has the same initial letter (+25p)", firstname_value)
     score += 25
 
+  log.debug("Firstname \"%s\" correct (summary %i/100p)", firstname_value, score)
   return score
 
 
@@ -126,16 +167,21 @@ def surname(surname_value: str, surname_result: str):
     Examples:
       surname("Jandt", "Jandt")
   """
+  if not isinstance(surname_value, str):
+    log.debug("Surname data type not valid (0/40p)")
+    return 0
+
   score = 0
 
   if not surname_value or not str(surname_value).isalpha():
-    # print("Nachname not valide. (0p)")
+    log.debug("Surname \"%s\" not correct (0/40p)", surname_value)
     return 0
 
   if surname_value.upper() == surname_result.upper():
-    # print("Nachname is equal. (40p)")
+    log.debug("Surname \"%s\" correct (40/40p)", surname_value)
     return 40
 
+  log.debug("Surname \"%s\" correct (%i/40p)", surname_value, score)
   return score
 
 
@@ -153,6 +199,10 @@ def weight(weight_value: str, weight_result: str):
     Examples:
       weight("3000g", "3200")
   """
+  if not isinstance(weight_value, str):
+    log.debug("weight data type not valid (0/50p)")
+    return 0
+
   # Remove leading zeros
   weight_value = weight_value.lstrip("0")
 
@@ -171,6 +221,7 @@ def weight(weight_value: str, weight_result: str):
       weight_value = float(weight_value.replace(',', '.')) * 1000
     else:
       # Unknowen
+      log.debug("Weight \"%s\" not valid (0/50p)", weight_value)
       return 0
 
   # Round and convert to integer
@@ -185,6 +236,8 @@ def weight(weight_value: str, weight_result: str):
   score = max_score - (int(abs(diff_weight / 50)) * 5)
 
   if score <= 0:
+    log.debug("Weight \"%s\" not correct (0/50p)", weight_value)
     return 0
 
+  log.debug("Weight \"%s\" correct (%i/50p)", weight_value, score)
   return score
