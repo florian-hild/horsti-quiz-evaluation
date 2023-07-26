@@ -25,6 +25,7 @@ from module_valuate import (
   firstname,
   surname,
   weight,
+  height,
 )
 
 resultset = {
@@ -33,7 +34,7 @@ resultset = {
   'firstname': 'Test01',
   'surname': 'Hindt',
   'weight': '3333',
-  'height': '333',
+  'height': '50',
 }
 cvs_cols = ["Teilnehmer", "Geschlecht", "Geburtstermin", "Name", "Nachname", "Geburtsgewicht in g", "Körpergröße in mm"]
 
@@ -130,8 +131,7 @@ def main():
     firstname_result = firstname(row["Name"], resultset["firstname"])
     surname_result = surname(row["Nachname"], resultset["surname"])
     weight_result = weight(row["Geburtsgewicht in g"], resultset["weight"])
-    # height_result = height(row["Körpergröße in mm"], resultset["height"])
-    height_result = 0
+    height_result = height(row["Körpergröße in mm"], resultset["height"])
 
     result_table.add_row([
       row["Teilnehmer"],

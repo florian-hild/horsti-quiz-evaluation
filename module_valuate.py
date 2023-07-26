@@ -200,7 +200,7 @@ def weight(weight_value: str, weight_result: str):
       weight("3000g", "3200")
   """
   if not isinstance(weight_value, str):
-    log.debug("weight data type not valid (0/50p)")
+    log.debug("Weight data type not valid (0/50p)")
     return 0
 
   # Remove leading zeros
@@ -240,4 +240,62 @@ def weight(weight_value: str, weight_result: str):
     return 0
 
   log.debug("Weight \"%s\" correct (%i/50p)", weight_value, score)
+  return score
+
+
+
+
+def height(height_value: str, height_result: str):
+  """
+    Arguments:
+      height_value: str
+      height_result: str
+
+    Returns:
+      score: int
+
+    Examples:
+      height("330mm", "300")
+  """
+  if not isinstance(height_value, str):
+    log.debug("Height data type not valid (0/50p)")
+    return 0
+
+  # Remove leading zeros
+  height_value = height_value.lstrip("0")
+
+  if re.match(r"^[0-9,\.]*\s*(mm|[mM]illimeter)\b", height_value):
+    # Millimeter
+    height_value = float(re.sub("[^0-9\. ]", "", height_value.replace(',', '.')))
+  elif re.match(r"^[0-9,\.]*\s*([cC]m|[zZ]entimeter|[cC]entimeter)\b", height_value):
+    # Zentimeter
+    height_value = float(re.sub("[^0-9\. ]", "", height_value.replace(',', '.'))) * 10
+  else:
+    if re.match(r"^[0-9]{3,4}(,\.)?[0-9]*", height_value):
+      # Millimeter
+      height_value = float(height_value.replace(',', '.'))
+    elif re.match(r"^[0-9]{1,2}(,\.)?[0-9]*", height_value):
+      # Zentimeter
+      height_value = float(height_value.replace(',', '.')) * 10
+    else:
+      # Unknowen
+      log.debug("Height \"%s\" not valid (0/50p)", height_value)
+      return 0
+
+  # Round and convert to integer
+  height_value = int(round(height_value))
+  height_result = int(round(float(height_result)))
+
+  diff_height = height_value - height_result
+  # print(f"{height_result} - {height_value} Differenz: {abs(diff_height)}")
+
+  max_score = 50
+  # pro 5mm (gerundet) Abweichung 5 Punkte weniger
+  score = max_score - (int(abs(diff_height / 50)) * 5)
+
+  if score <= 0:
+    log.debug("Height \"%s\" not correct (0/50p)", height_value)
+    return 0
+
+  log.debug("Height \"%s\" correct (%i/50p)", height_value, score)
   return score
