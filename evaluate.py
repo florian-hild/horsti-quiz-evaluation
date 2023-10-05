@@ -19,22 +19,22 @@ import pandas
 from prettytable import PrettyTable
 
 from module_valuate import (
-  participant,
-  gender,
-  birthdate,
-  firstname,
-  surname,
-  weight,
-  height,
+  check_participant,
+  check_gender,
+  check_birthdate,
+  check_firstname,
+  check_surname,
+  check_weight,
+  check_height,
 )
 
 resultset = {
-  'gender': "Divers",
-  'birthdate': '2023-08-21',
-  'firstname': 'Test01',
-  'surname': 'Hindt',
-  'weight': '3333',
-  'height': '50',
+  'gender': "Weiblich",
+  'birthdate': '2023-08-24',
+  'firstname': 'Amelie Lotta',
+  'surname': 'Jandt',
+  'weight': '3565',
+  'height': '510',
 }
 cvs_cols = ["Teilnehmer", "Geschlecht", "Geburtstermin", "Name", "Nachname", "Geburtsgewicht in g", "Körpergröße in mm"]
 
@@ -125,13 +125,13 @@ def main():
   for index, row in cvs_data.iterrows():
     log.debug("----------------------------------------")
     log.debug("Evaluation for \"%s\"", row["Teilnehmer"])
-    participant_result = participant(row["Teilnehmer"])
-    gender_result = gender(row["Geschlecht"], resultset["gender"])
-    birthdate_result = birthdate(row["Geburtstermin"], resultset["birthdate"])
-    firstname_result = firstname(row["Name"], resultset["firstname"])
-    surname_result = surname(row["Nachname"], resultset["surname"])
-    weight_result = weight(row["Geburtsgewicht in g"], resultset["weight"])
-    height_result = height(row["Körpergröße in mm"], resultset["height"])
+    participant_result = check_participant(row["Teilnehmer"])
+    gender_result = check_gender(row["Geschlecht"], resultset["gender"])
+    birthdate_result = check_birthdate(row["Geburtstermin"], resultset["birthdate"])
+    firstname_result = check_firstname(row["Name"], resultset["firstname"])
+    surname_result = check_surname(row["Nachname"], resultset["surname"])
+    weight_result = check_weight(row["Geburtsgewicht in g"], resultset["weight"])
+    height_result = check_height(row["Körpergröße in mm"], resultset["height"])
 
     result_table.add_row([
       row["Teilnehmer"],
@@ -152,6 +152,7 @@ def main():
     ])
 
   result_table.sortby = "Total res"
+  result_table.reversesort = True
   result_table.align = "l"
   print(result_table)
 

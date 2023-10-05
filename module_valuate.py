@@ -4,7 +4,7 @@ import re
 
 logger = log.getLogger(__name__)
 
-def participant(name: str):
+def check_participant(name: str):
   """
     Arguments:
       name: str
@@ -33,7 +33,7 @@ def participant(name: str):
   name = regrex_pattern.sub(r'',name)
   # print(name.encode())
 
-  if not name or not str(name).replace(" ", "").isalpha() or str(name) in ["deinenNamen",]:
+  if not name or not str(name).replace(" ", "").isalpha() or str(name) in ["deinenNamen", "Ichscheissaufdie10punkte"]:
     log.debug("Participant \"%s\" not valid (0/10p)", name)
     return 0
 
@@ -43,7 +43,7 @@ def participant(name: str):
 
 
 
-def gender(gender_value: str, gender_result: str):
+def check_gender(gender_value: str, gender_result: str):
   """
     Arguments:
       gender_value: str
@@ -74,7 +74,7 @@ def gender(gender_value: str, gender_result: str):
 
 
 
-def birthdate(birthdate_value: str, birthdate_result: str):
+def check_birthdate(birthdate_value: str, birthdate_result: str):
   """
     Arguments:
       birthdate_value: str
@@ -112,7 +112,7 @@ def birthdate(birthdate_value: str, birthdate_result: str):
 
 
 
-def firstname(firstname_value: str, firstname_result: str):
+def check_firstname(firstname_value: str, firstname_result: str):
   """
     Arguments:
       firstname_value: str
@@ -128,34 +128,39 @@ def firstname(firstname_value: str, firstname_result: str):
     log.debug("Firstname data type not valid (0/100p)")
     return 0
 
-  score = 0
+  values = firstname_value.split()
+  results = firstname_result.split()
+  return_score = 0
 
-  # Remove spaces
-  firstname_value = firstname_value.replace(' ', '')
+  for res_name in results:
+    score = 0
 
-  if not firstname_value or not str(firstname_value).isalpha():
-    log.debug("Firstname \"%s\" not correct (0/100p)", firstname_value)
-    return 0
+    for val_name in values:
+      if not val_name or not str(val_name).isalpha():
+        log.debug("Firstname \"%s\" not correct (0/100p)", val_name)
+        score = 0
 
-  if firstname_value.upper() == firstname_result.upper():
-    log.debug("Firstname \"%s\" correct (100/100p)", firstname_value)
-    return 100
+      if val_name.upper() == res_name.upper():
+        log.debug("Firstname \"%s\" correct (100/100p)", val_name)
+        return 100
 
-  if len(firstname_value) == len(firstname_result):
-    log.debug("Firstname \"%s\" has equal number of characters (+25p)", firstname_value)
-    score += 25
+      if len(val_name) == len(res_name):
+        log.debug("Firstname \"%s\" has equal number of characters (+25p)", val_name)
+        score += 25
 
-  if firstname_value[0].upper() == firstname_result[0].upper():
-    log.debug("Firstname \"%s\" has the same initial letter (+25p)", firstname_value)
-    score += 25
+      if val_name[0].upper() == res_name[0].upper():
+        log.debug("Firstname \"%s\" has the same initial letter (+25p)", val_name)
+        score += 25
 
-  log.debug("Firstname \"%s\" correct (summary %i/100p)", firstname_value, score)
-  return score
+      return_score = max(score, return_score)
+
+  log.debug("Firstname \"%s\" correct (summary %i/100p)", firstname_value, return_score)
+  return return_score
 
 
 
 
-def surname(surname_value: str, surname_result: str):
+def check_surname(surname_value: str, surname_result: str):
   """
     Arguments:
       surname_value: str
@@ -181,13 +186,13 @@ def surname(surname_value: str, surname_result: str):
     log.debug("Surname \"%s\" correct (40/40p)", surname_value)
     return 40
 
-  log.debug("Surname \"%s\" correct (%i/40p)", surname_value, score)
+  log.debug("Surname \"%s\" not correct (%i/40p)", surname_value, score)
   return score
 
 
 
 
-def weight(weight_value: str, weight_result: str):
+def check_weight(weight_value: str, weight_result: str):
   """
     Arguments:
       weight_value: str
@@ -206,23 +211,20 @@ def weight(weight_value: str, weight_result: str):
   # Remove leading zeros
   weight_value = weight_value.lstrip("0")
 
-  if re.match(r"^[0-9,\.]*\s*(g|[gG]ramm|[gG]r)\b", weight_value):
+  if re.match(r"^[0-9\,\.]*\s*(g|[gG]ramm|[gG]r)\b", weight_value) or \
+     re.match(r"^[0-9]{3,5}([\.|\,][0-9]*)?$", weight_value):
     # Gramm
+    log.debug("Weight in g: \"%s\"", weight_value)
     weight_value = float(re.sub("[^0-9\. ]", "", weight_value.replace(',', '.')))
-  elif re.match(r"^[0-9,\.]*\s*(kg|[kK]ilo|[kK]ilogramm)\b", weight_value):
+  elif re.match(r"^[0-9\,\.]*\s*(kg|[kK]ilo|[kK]ilogramm)\b", weight_value) or \
+       re.match(r"^[0-9]{1,3}([\.|\,][0-9]*)?$", weight_value):
     # Kilogramm
+    log.debug("Weight: Converting \"%s\"kg to \"%s\"g", weight_value, weight_value * 1000)
     weight_value = float(re.sub("[^0-9\. ]", "", weight_value.replace(',', '.'))) * 1000
   else:
-    if re.match(r"^[0-9]{3,5}(,\.)?[0-9]*", weight_value):
-      # Gramm
-      weight_value = float(weight_value.replace(',', '.'))
-    elif re.match(r"^[0-9]{1,3}(,\.)?[0-9]*", weight_value):
-      # Kilogramm
-      weight_value = float(weight_value.replace(',', '.')) * 1000
-    else:
-      # Unknowen
-      log.debug("Weight \"%s\" not valid (0/50p)", weight_value)
-      return 0
+    # Unknowen
+    log.debug("Weight \"%s\" not valid (0/50p)", weight_value)
+    return 0
 
   # Round and convert to integer
   weight_value = int(round(weight_value))
@@ -245,7 +247,7 @@ def weight(weight_value: str, weight_result: str):
 
 
 
-def height(height_value: str, height_result: str):
+def check_height(height_value: str, height_result: str):
   """
     Arguments:
       height_value: str
@@ -264,23 +266,23 @@ def height(height_value: str, height_result: str):
   # Remove leading zeros
   height_value = height_value.lstrip("0")
 
-  if re.match(r"^[0-9,\.]*\s*(mm|[mM]illimeter)\b", height_value):
+  if re.match(r"^[0-9]{4}([\.|\,][0-9]*)?$", height_value):
+    log.debug("Weight: Converting \"%s\"m to \"%s\"mm", height_value, float(height_value.replace(',', '.')) / 10)
+    height_value = float(height_value.replace(',', '.')) / 10
+  elif re.match(r"^[0-9\,\.]*\s*(mm|[mM]illimeter)\b", height_value) or \
+       re.match(r"^[0-9]{3}([\.|\,][0-9]*)?$", height_value):
     # Millimeter
+    log.debug("Height in mm: \"%s\"", height_value)
     height_value = float(re.sub("[^0-9\. ]", "", height_value.replace(',', '.')))
-  elif re.match(r"^[0-9,\.]*\s*([cC]m|[zZ]entimeter|[cC]entimeter)\b", height_value):
+  elif re.match(r"^[0-9\,\.]*\s*([cC]m|[zZ]entimeter|[cC]entimeter)\b", height_value) or \
+       re.match(r"^[0-9]{2}([\.|\,][0-9]*)?$", height_value):
     # Zentimeter
+    log.debug("Weight: Converting \"%s\"cm to \"%s\"mm", height_value, height_value * 10)
     height_value = float(re.sub("[^0-9\. ]", "", height_value.replace(',', '.'))) * 10
   else:
-    if re.match(r"^[0-9]{3,4}(,\.)?[0-9]*", height_value):
-      # Millimeter
-      height_value = float(height_value.replace(',', '.'))
-    elif re.match(r"^[0-9]{1,2}(,\.)?[0-9]*", height_value):
-      # Zentimeter
-      height_value = float(height_value.replace(',', '.')) * 10
-    else:
-      # Unknowen
-      log.debug("Height \"%s\" not valid (0/50p)", height_value)
-      return 0
+    # Unknowen
+    log.debug("Height \"%s\" not valid (0/50p)", height_value)
+    return 0
 
   # Round and convert to integer
   height_value = int(round(height_value))
@@ -291,7 +293,7 @@ def height(height_value: str, height_result: str):
 
   max_score = 50
   # pro 5mm (gerundet) Abweichung 5 Punkte weniger
-  score = max_score - (int(abs(diff_height / 50)) * 5)
+  score = max_score - (int(abs(diff_height / 5)) * 5)
 
   if score <= 0:
     log.debug("Height \"%s\" not correct (0/50p)", height_value)
